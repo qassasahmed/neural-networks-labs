@@ -29,6 +29,7 @@ if __name__ == '__main__':
         try:
             file_path = fd.askopenfilename()
             df = pd.read_csv(file_path)
+            # print(df)
             target = df.iloc[:, -1].values.tolist()
             features = df.iloc[:, :-1].values.tolist()
             return features, target

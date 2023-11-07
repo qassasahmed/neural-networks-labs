@@ -1,27 +1,25 @@
 import numpy as np
+import pandas as pd
 
 
-def activation_function(y_in):
+def read_file(path):
+    df = pd.read_csv(path)
+    target = df.iloc[:, -1].values.tolist()
+    features = df.iloc[:, :-1].values.tolist()
+    return features, target
+
+
+def y_in(inputs, weights):
     """
-    Threshold Activation function with Theta equals zero.
-    :param y_in: the linear summation of wi * xi
-    :return:  0 if y_in == 0, 1 if y_in > 0, -1 if y_in <0
-    """
-    print(f"y_in:: {y_in : <10}  y_out:: {0 if y_in == 0 else y_in / abs(y_in)}")
-    return 0 if y_in == 0 else y_in / abs(y_in)
-
-
-def y_o(inputs, weights):
-    """
-    Calculates the linear summation of wi * xi, then calls the activation function
+    Calculates the linear summation of wi * xi
     :param inputs: list of xi
     :param weights: list of wi
-    :return: y_o which the threshold activation of the linear summation
+    :return: the linear summation of weighted input
     """
     summation = 0
     for i in range(len(inputs)):
         summation += inputs[i] * weights[i]
-    return activation_function(summation)
+    return summation
 
 
 def update_weights(w, d):
@@ -30,13 +28,14 @@ def update_weights(w, d):
 
 class Perceptron:
 
-    def __init__(self, number_of_features, eta):
+    def __init__(self, number_of_features, eta=1):
         self.old_weights = list(np.zeros(number_of_features))
         self.no_delta_update = list(np.zeros(number_of_features))
         self.deltas = []
         self.eta = eta
         self.current_epoch = []
         self.all_epochs = []
+        self.act = Activation()
 
     def delta_values(self, flag, row, T):
         """
@@ -53,7 +52,8 @@ class Perceptron:
         for epoch in range(5):
             i = 0
             for row in matrix:
-                y_output = y_o(row, self.old_weights)
+                y_input = y_in(row, self.old_weights)
+                y_output = self.act.threshold(y_input)
                 delta = self.delta_values(y_output == target[i], row, target[i])
                 self.old_weights = update_weights(self.old_weights, delta)
                 i = i + 1
@@ -69,6 +69,39 @@ class Perceptron:
 
         return self.all_epochs
 
+    def get_activation_info(self):
+        return self.act.get_input_output()
 
-if __name__ == '__main__':
-    print("go to main")
+
+class Activation:
+    y_in: list[float]
+    y_out: list[float]
+
+    def __init__(self):
+        self.y_in = []
+        self.y_out = []
+
+    def get_input_output(self):
+        return pd.DataFrame(list(zip(self.y_in, self.y_out)),
+                            columns=["y_in", "y_out"])
+
+    def linear(self, y_input):
+        self.y_in.append(y_input)
+        self.y_out.append(y_input)
+        return self.y_out[-1]
+
+    def threshold(self, y_input, theta=0):
+        self.y_in.append(y_input)
+        self.y_out.append(0 if y_input == theta else y_input / abs(y_input))
+        return self.y_out[-1]
+
+    def relu(self, y_input):
+        self.y_in.append(y_input)
+        self.y_out.append(max(0, y_input))
+        return self.y_out[-1]
+
+    def sigmoid(self):
+        pass
+
+    def tanh(self):
+        pass
