@@ -90,9 +90,9 @@ class Activation:
         self.y_out.append(y_input)
         return self.y_out[-1]
 
-    def threshold(self, y_input, theta=0):
+    def threshold(self, y_input):
         self.y_in.append(y_input)
-        self.y_out.append(0 if y_input == theta else y_input / abs(y_input))
+        self.y_out.append(0 if y_input == 0 else y_input / abs(y_input))
         return self.y_out[-1]
 
     def relu(self, y_input):
